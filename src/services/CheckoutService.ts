@@ -4,12 +4,7 @@
 // "Separe a lógica de negócios dentro de um arquivo Service"
 // =============================================================================
 
-import { PrismaClient } from "@prisma/client";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const prisma = new PrismaClient();
+import prisma from "../lib/prisma";
 
 // Interface para tipar o payload de entrada — tipagem estrita, sem `any`
 interface CheckoutInput {
