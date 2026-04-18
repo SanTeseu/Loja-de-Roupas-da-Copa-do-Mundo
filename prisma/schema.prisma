@@ -1,0 +1,86 @@
+// =============================================================================
+// Schema Prisma — E-commerce Copa do Mundo
+// Define as tabelas e relacionamentos conforme a modelagem de dados (02-data-models.md)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Seleção Nacional — relacionamento 1:N com Jersey
+model NationalTeam {
+  id            String   @id @default(uuid())
+  countryName   String
+  confederation String?
+
+  // Uma seleção possui muitas camisas
+  jerseys Jersey[]
+
+  @@map("national_teams")
+}
+
+/// Camisa oficial — relacionamentos:
+/// N:1 com NationalTeam | 1:1 com JerseyTechSpec | N:M com Customer (via Order)
+model Jersey {
+  id             String  @id @default(uuid())
+  nationalTeamId String
+  edition        String  // ex: "Titular", "Reserva"
+  price          Decimal
+  stockQuantity  Int     @default(0)
+
+  // Relacionamento N:1 — cada camisa pertence a uma seleção
+  nationalTeam NationalTeam @relation(fields: [nationalTeamId], references: [id])
+
+  // Relacionamento 1:1 — especificação técnica opcional
+  techSpec JerseyTechSpec?
+
+  // Relacionamento N:M via tabela pivô Order
+  orders Order[]
+
+  @@map("jerseys")
+}
+
+/// Especificação técnica da camisa — relacionamento 1:1 com Jersey
+model JerseyTechSpec {
+  id                 String @id @default(uuid())
+  jerseyId           String @unique
+  fabricMaterial     String
+  coolingTechnology  String
+
+  // Relacionamento 1:1 — cada spec pertence a exatamente uma camisa
+  jersey Jersey @relation(fields: [jerseyId], references: [id])
+
+  @@map("jersey_tech_specs")
+}
+
+/// Cliente — relacionamento N:M com Jersey (via Order)
+model Customer {
+  id       String @id @default(uuid())
+  fullName String
+  email    String @unique
+
+  // Relacionamento N:M via tabela pivô Order
+  orders Order[]
+
+  @@map("customers")
+}
+
+/// Tabela pivô que registra a compra — PK composta (customerId + jerseyId)
+model Order {
+  customerId   String
+  jerseyId     String
+  purchaseDate DateTime @default(now())
+
+  // Relacionamentos com as tabelas pai
+  customer Customer @relation(fields: [customerId], references: [id])
+  jersey   Jersey   @relation(fields: [jerseyId], references: [id])
+
+  // Chave primária composta conforme a modelagem
+  @@id([customerId, jerseyId])
+  @@map("orders")
+}
