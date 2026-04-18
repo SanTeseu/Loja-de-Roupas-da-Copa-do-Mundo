@@ -4,6 +4,7 @@
 // "Separe a lógica de negócios dentro de um arquivo Service"
 // =============================================================================
 
+import { Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
 
 // Interface para tipar o payload de entrada — tipagem estrita, sem `any`
@@ -49,7 +50,7 @@ async function processCheckout(input: CheckoutInput): Promise<CheckoutResult> {
   // Transação ACID — garante integridade entre leitura de estoque,
   // criação do pedido e baixa de estoque (01-product-requirements.md)
   // -----------------------------------------------------------------------
-  const order = await prisma.$transaction(async (tx) => {
+  const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // 1. Busca a camisa pelo ID
     const jersey = await tx.jersey.findUnique({
       where: { id: jerseyId },

@@ -8,7 +8,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 /// Seleção Nacional — relacionamento 1:N com Jersey
@@ -29,7 +30,7 @@ model Jersey {
   id             String  @id @default(uuid())
   nationalTeamId String
   edition        String  // ex: "Titular", "Reserva"
-  price          Decimal
+  price          Float
   stockQuantity  Int     @default(0)
 
   // Relacionamento N:1 — cada camisa pertence a uma seleção
